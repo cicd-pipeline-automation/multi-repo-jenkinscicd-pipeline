@@ -35,7 +35,7 @@ REM Validate Backend
 REM ------------------------------
 echo [STEP] Checking backend...
 
-curl http://localhost:8080/health --silent --fail >NUL
+curl http://localhost:8081/health --silent --fail >NUL
 if %errorlevel% neq 0 (
     echo [ERROR] Backend /health failed.
     exit /b 1
