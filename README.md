@@ -1,247 +1,263 @@
-# Multi-Repository Jenkins CI/CD – Windows Server Pipeline
+# Multi-Repo CI/CD Pipeline — Complete Setup Guide
 
-This document explains how the **multi-repository Jenkins CI/CD pipeline** works on a **Windows Server**, including the folder structure, scripts, Jenkinsfile behavior, build flow, and deployment strategy.
+## 1. Software Tools Installation
 
----
+### Required Tools
+- **Java 17+** (Backend)
+- **Node.js 18 LTS** (Frontend)
+- **Maven 3.9+**
+- **Git for Windows**
+- **Jenkins (Windows)**
+- **Nginx (for serving frontend)**
+- **Curl (included with Windows 10+)**
 
-## 🚀 1. Overview
+### Install Instructions & Version Checks
 
-This project provides a **production-ready CI/CD system** that:
-
-- Clones multiple repositories (frontend + backend)
-- Builds the frontend (Node.js)
-- Builds the backend (Spring Boot using `mvnw.cmd`)
-- Builds Docker images
-- Deploys containers on Windows Server:
-  - Backend → **port 8080**
-  - Frontend → **port 3000**
-
-All logic is executed through **PowerShell scripts** for safety and clarity.
-
----
-
-## 📁 2. Folder Structure on Windows Server
-
-```
-C:├── jenkins-pipelines│   ├── clone-multiple-repos.ps1
-│   ├── build-frontend.ps1
-│   ├── build-backend.ps1
-│   ├── deploy.ps1
-│
-└── jenkins-workspace    ├── frontend\   (cloned automatically)
-    └── backend\    (cloned automatically)
+#### Java
+Download: https://adoptium.net  
+Check version:
+```bash
+java -version
 ```
 
-Scripts are stored in `C:\jenkins-pipelines`  
-Repositories are cloned into `C:\jenkins-workspace`
-
----
-
-## 🔧 3. One-Time Setup on Windows Server
-
-### Install Required Tools
-
-Ensure the following tools are installed and visible in PATH:
-
-- Git
-- Node.js + npm
-- Java JDK (Temurin recommended)
-- Docker Desktop / Docker Engine
-- Jenkins agent for Windows (`windows` label)
-
-Test each tool:
-
-```
-git --version
+#### Node.js
+Download: https://nodejs.org  
+Check version:
+```bash
 node -v
 npm -v
-java -version
-docker --version
+```
+
+#### Maven
+Download: https://maven.apache.org  
+Check:
+```bash
+mvn -v
+```
+
+#### Git
+Download: https://git-scm.com  
+Check:
+```bash
+git --version
 ```
 
 ---
 
-## 🔄 4. Jenkins Pipeline Flow (Step-by-Step)
+## 2. Environment Variable Setup (Windows)
 
-The Jenkins pipeline calls the PowerShell scripts in order.  
-Here is **exactly what happens** during a build.
+Add the following to **Environment Variables → System PATH:**
+
+| Tool | Path Example |
+|------|--------------|
+| Java | `C:\Program Files\Eclipse Foundation\jdk-17\bin` |
+| Maven | `C:\apache-maven-3.9.6\bin` |
+| Node | `C:\Program Files\nodejs` |
+| Git | `C:\Program Files\Git\bin` |
+
+Verify using Command Prompt:
+```
+echo %PATH%
+```
 
 ---
 
-### 4.1 Stage 1 – Clone Multi Repositories
+## 3. Folder Structure
 
+```
+C:/
+ ├─ jenkins-scripts/
+ │   ├─ clone-multiple-repos.bat
+ │   ├─ build-frontend.bat
+ │   ├─ build-backend.bat
+ │   ├─ deploy-to-server.bat
+ │   ├─ start-backend.bat
+ │   ├─ start-frontend.bat
+ │   ├─ validate-deployment.bat
+ │
+ ├─ jenkins-workspace/
+ │   ├─ frontend/
+ │   ├─ backend/
+ │
+ ├─ deployments/
+ │   └─ backend/
+ │
+ ├─ nginx/
+     └─ html/ (Frontend deployment)
+```
+
+---
+
+## 4. GitHub Repository Setup
+
+### A. Multi-Repo Pipeline Repository
+```
+multi-repo-jenkinscicd-pipeline/
+ ├── Jenkinsfile
+ └── README.md
+```
+
+Purpose:
+- Stores Jenkinsfile
+- Drives CI/CD automation
+
+### B. Frontend Repository (React)
+```
+frontend-ui/
+ ├── public/
+ ├── src/
+ ├── package.json
+ └── README.md
+```
+
+### C. Backend Repository (Spring Boot)
+```
+backend-api/
+ ├── src/
+ │    ├── main/
+ │    │    ├── java/com/example/app/
+ │    │    │      ├── HealthController.java
+ │    │    │      ├── Application.java
+ │    │    └── resources/
+ │    │          └── application.properties
+ ├── pom.xml
+ └── README.md
+```
+
+---
+
+## 5. Jenkins Pipeline Stages Explanation
+
+### **1. Clone Repositories**
 Runs:
-
 ```
-clone-multiple-repos.ps1
+clone-multiple-repos.bat
 ```
+Creates:
+- `C:\jenkins-workspacerontend`
+- `C:\jenkins-workspaceackend`
 
-This script:
+### **2. Build Frontend**
+Steps:
+- Install dependencies (`npm install`)
+- Compile React build (`npm run build`)
+- Output → `build/` folder
 
-1. Ensures `C:\jenkins-workspace` exists
-2. Reads repo list:
-   - frontend repo
-   - backend repo
-3. For each repo:
-   - If folder **does not exist** → `git clone`
-   - If folder **exists**:
-     - `git fetch`
-     - `git reset --hard`
+### **3. Build Backend**
+Steps:
+- Maven clean package
+- Generate spring-boot JAR
+- Output → `target/backend-api-1.0.0.jar`
 
-**Outcome:**
+### **4. Deploy Artifacts**
+Copies:
+- Backend → `C:\deploymentsackend`
+- Frontend → `C:
+ginx\html`
 
+### **5. Start Backend Service**
+- Kills old java
+- Starts new backend on port 8081
+- Verifies with `/health`
+
+### **6. Start Frontend**
+- Restart nginx OR verify static files
+
+### **7. Validate Deployment**
+Frontend check:
 ```
-C:\jenkins-workspacerontend
-C:\jenkins-workspaceackend
+curl http://localhost/
 ```
-
-Both repos contain latest code from GitHub.
+Backend check:
+```
+curl http://localhost:8081/health
+```
 
 ---
 
-### 4.2 Stage 2 – Build Frontend
+## 6. Jenkins Scripts Folder Setup
 
-Runs:
-
+### Step-by-step:
+1. Create folder:
 ```
-build-frontend.ps1
-```
-
-This script:
-
-1. Navigates to `C:\jenkins-workspacerontend`
-2. Installs dependencies:
-
-```
-npm install
+C:\jenkins-scripts
 ```
 
-3. Builds the frontend:
+2. Copy all `.bat` scripts:
 
 ```
-npm run build
+clone-multiple-repos.bat
+build-frontend.bat
+build-backend.bat
+deploy-to-server.bat
+start-backend.bat
+start-frontend.bat
+validate-deployment.bat
 ```
 
-**Outcome:**  
-Production frontend bundle generated successfully.
+3. Ensure Jenkins has permission:
+```
+icacls "C:\jenkins-scripts" /grant Everyone:F
+```
+
+4. Reference scripts in Jenkinsfile:
+```groovy
+bat "C:\jenkins-scripts\build-frontend.bat"
+```
 
 ---
 
-### 4.3 Stage 3 – Build Backend
+## 7. Build Process Summary
 
-Runs:
+### Frontend (React)
+- Install dependencies
+- Build optimized bundle
+- Output → `build/`
+- Copy to nginx
 
-```
-build-backend.ps1
-```
-
-This script:
-
-1. Navigates to `C:\jenkins-workspaceackend`
-2. Validates `mvnw.cmd` exists
-3. Builds Spring Boot application:
-
-```
-mvnw.cmd clean package
-```
-
-**Outcome:**  
-Spring Boot JAR created in:
-
-```
-backend	arget```
+### Backend (Spring Boot)
+- Maven clean, compile, test, package
+- Boot JAR created
+- Deploy JAR to server
+- Start service
 
 ---
 
-### 4.4 Stage 4 – Deploy (Docker Build + Run)
+## 8. Deployment Process Summary
 
-Runs:
+### Backend
+- Stop old instance
+- Copy new jar
+- Start new java process
 
-```
-deploy.ps1
-```
-
-This script:
-
-1. Builds two images:
-   - `frontend-app:latest`
-   - `backend-api:latest`
-
-2. Removes old containers (safe operation):
-   ```
-   docker stop ...
-   docker rm ...
-   ```
-
-3. Runs new containers:
-
-   - Backend → `http://server:8080`
-   - Frontend → `http://server:3000`
-
-**Outcome:**  
-Latest versions of both apps are deployed and running via Docker.
+### Frontend
+- Remove old static files
+- Copy new build files
 
 ---
 
-## 🧹 5. Jenkins Post Steps
+## 9. Validation Process Summary
 
-The `Jenkinsfile` uses:
+### Frontend:
+- Check index.html
+- Check static/js exists
+- Test homepage response with curl
 
-```
-post {
-    success { echo "Deployment Success!" }
-    failure { echo "Build Failed!" }
-    always  { cleanWs() }
-}
-```
-
-- Logs results cleanly
-- Cleans Jenkins workspace directory (not your machine workspace)
-- Keeps Jenkins master clean
+### Backend:
+- Hit `/health`
+- Expect JSON response confirming service is UP
 
 ---
 
-## 🏁 6. Daily Workflow
+## 10. Final Notes
 
-1. Developer pushes new code
-2. Jenkins pipeline is triggered manually or via webhook
-3. Jenkins:
-   - Pulls latest repos
-   - Builds frontend and backend
-   - Builds Docker images
-   - Deploys updated containers
-4. Applications available at:
-   - **Frontend:** `http://server:3000`
-   - **Backend:** `http://server:8080`
+This documentation gives:
+✔ Full environment setup  
+✔ Tools installation  
+✔ GitHub repo structure  
+✔ Jenkinsfile explanation  
+✔ Script setup  
+✔ Deployment flow  
+✔ Validation checklist  
 
----
-
-## 🎯 7. Summary
-
-This system gives you:
-
-- Multi-repo support
-- Clean separation of CI (Jenkinsfile) and logic (PowerShell scripts)
-- Fully automated Docker-based deployment
-- Production-ready folder structure
-- Easy maintenance and scalability
-
-This is suitable for:
-- Multi-service architectures
-- Windows Server environments
-- Enterprise Jenkins setups
-- On‑prem builds
-
----
-
-## 📞 Need More?
-
-I can also generate:
-
-- Dev → Staging → Prod promotion flow
-- Automatic versioning (semantic versioning)
-- Git webhooks setup
-- Reverse proxy (Nginx/Traefik for Windows Docker)
-- Kubernetes version of the pipeline
-
-Just ask!
+This README can be directly added to your main Git repo.
