@@ -25,15 +25,6 @@ function Log-Error($msg) {
 
 
 # -----------------------------
-#  VALIDATE GIT INSTALLATION
-# -----------------------------
-if (!(Get-Command git.exe -ErrorAction SilentlyContinue)) {
-    Log-Error "Git is not installed or not available in PATH."
-    exit 1
-}
-
-
-# -----------------------------
 #  CONFIGURABLE VARIABLES
 # -----------------------------
 $BASE_FOLDER = "C:\jenkins-workspace"
@@ -65,27 +56,33 @@ foreach ($repo in $REPOS) {
 
     $TARGET_PATH = Join-Path $BASE_FOLDER $repo.Name
 
-    Log-Info "Processing repository: $($repo.Name) ($($repo.Url))"
+    Log-Info "Processing repository: $($repo.Name)"
 
     try {
+
         if (Test-Path $TARGET_PATH) {
+
             Log-Warn "Repository exists — pulling latest changes..."
             Set-Location $TARGET_PATH
             git fetch --all
-            git reset --hard origin/$($repo.Branch)
+            git reset --hard "origin/$($repo.Branch)"
             Log-Success "Updated repository: $($repo.Name)"
+
         }
         else {
+
             Log-Info "Cloning repository..."
             git clone -b $repo.Branch $repo.Url $TARGET_PATH
             Log-Success "Cloned repository: $($repo.Name)"
+
         }
+
     }
     catch {
         Log-Error "Failed processing repository: $($repo.Name)"
         exit 1
     }
-}
 
+}
 
 Log-Success "=== All Repositories Successfully Cloned/Updated ==="
