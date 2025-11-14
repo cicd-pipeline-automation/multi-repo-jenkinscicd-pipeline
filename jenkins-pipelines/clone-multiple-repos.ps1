@@ -4,29 +4,11 @@
 ===============================================================
 #>
 
-# -----------------------------
-#  LOGGING FUNCTIONS
-# -----------------------------
-function Log-Info($msg) {
-    Write-Host "[INFO]    $msg" -ForegroundColor Cyan
-}
+function Log-Info($msg) { Write-Host "[INFO]    $msg" -ForegroundColor Cyan }
+function Log-Success($msg) { Write-Host "[SUCCESS] $msg" -ForegroundColor Green }
+function Log-Warn($msg) { Write-Host "[WARNING] $msg" -ForegroundColor Yellow }
+function Log-Error($msg) { Write-Host "[ERROR]   $msg" -ForegroundColor Red }
 
-function Log-Success($msg) {
-    Write-Host "[SUCCESS] $msg" -ForegroundColor Green
-}
-
-function Log-Warn($msg) {
-    Write-Host "[WARNING] $msg" -ForegroundColor Yellow
-}
-
-function Log-Error($msg) {
-    Write-Host "[ERROR]   $msg" -ForegroundColor Red
-}
-
-
-# -----------------------------
-#  CONFIGURABLE VARIABLES
-# -----------------------------
 $BASE_FOLDER = "C:\jenkins-workspace"
 
 $REPOS = @(
@@ -34,13 +16,8 @@ $REPOS = @(
     @{ Name = "backend";  Url = "https://github.com/cicd-pipeline-automation/backend-api.git"; Branch = "main" }
 )
 
-
 Log-Info "=== Starting Multi-Repository Clone Process ==="
 
-
-# -----------------------------
-#  PREPARE WORKSPACE FOLDER
-# -----------------------------
 if (!(Test-Path $BASE_FOLDER)) {
     Log-Warn "Workspace not found, creating: $BASE_FOLDER"
     New-Item -ItemType Directory -Path $BASE_FOLDER | Out-Null
@@ -48,10 +25,6 @@ if (!(Test-Path $BASE_FOLDER)) {
 
 Set-Location $BASE_FOLDER
 
-
-# -----------------------------
-#  CLONE OR PULL EACH REPOSITORY
-# -----------------------------
 foreach ($repo in $REPOS) {
 
     $TARGET_PATH = Join-Path $BASE_FOLDER $repo.Name
@@ -61,20 +34,16 @@ foreach ($repo in $REPOS) {
     try {
 
         if (Test-Path $TARGET_PATH) {
-
             Log-Warn "Repository exists — pulling latest changes..."
             Set-Location $TARGET_PATH
             git fetch --all
             git reset --hard "origin/$($repo.Branch)"
             Log-Success "Updated repository: $($repo.Name)"
-
         }
         else {
-
             Log-Info "Cloning repository..."
             git clone -b $repo.Branch $repo.Url $TARGET_PATH
             Log-Success "Cloned repository: $($repo.Name)"
-
         }
 
     }
