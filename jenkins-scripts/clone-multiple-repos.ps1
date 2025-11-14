@@ -16,7 +16,7 @@ $REPOS = @(
     @{ Name = "backend";  Url = "https://github.com/cicd-pipeline-automation/backend-api.git"; Branch = "main" }
 )
 
-Log-Info "=== Starting Multi-Repository Clone Process ==="
+Log-Info "=== Starting Multi-Repository Clone Process ===:"
 
 if (!(Test-Path $BASE_FOLDER)) {
     Log-Warn "Workspace not found, creating: $BASE_FOLDER"
