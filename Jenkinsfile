@@ -31,7 +31,7 @@ pipeline {
      ************************************************************/
     stages {
 
-        stage('Clone Multi Repositories 📥') {
+        stage('Clone Multi Repositories') {
             steps {
                 script {
                     echo "Starting clone operations into: ${WORKSPACE_DIR}"
@@ -42,7 +42,7 @@ pipeline {
             }
         }
 
-        stage('Build Frontend 🛠') {
+        stage('Build Frontend') {
             steps {
                 script {
                     echo "Running frontend build..."
@@ -53,7 +53,7 @@ pipeline {
             }
         }
 
-        stage('Build Backend ⚙️') {
+        stage('Build Backend') {
             steps {
                 script {
                     echo "Running backend Maven build..."
@@ -64,7 +64,7 @@ pipeline {
             }
         }
 
-        stage('Deploy to Server 🚀') {
+        stage('Deploy to Server') {
             steps {
                 script {
                     echo "Executing Docker deployment..."
@@ -82,11 +82,11 @@ pipeline {
     post {
 
         success {
-            echo "🎉 Deployment Completed Successfully!"
+            echo "Deployment Completed Successfully!"
         }
 
         failure {
-            echo "❌ Build/Deployment Failed — Check logs!"
+            echo "Build/Deployment Failed — Check logs!"
         }
     }
 }
