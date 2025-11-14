@@ -9,12 +9,19 @@ pipeline {
             }
         }
 
+        stage('DEBUG — Print Frontend Build Script') {
+        steps {
+                bat "type C:\\jenkins-scripts\\build-frontend.bat"
+            }
+        }
+
+
         stage('Build Frontend') {
             steps {
                 bat "C:\\jenkins-scripts\\build-frontend.bat"
             }
         }
-
+        
         stage('Build Backend') {
             steps {
                 bat "C:\\jenkins-scripts\\build-backend.bat"
