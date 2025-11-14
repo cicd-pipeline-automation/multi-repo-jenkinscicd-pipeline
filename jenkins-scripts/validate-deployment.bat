@@ -2,7 +2,7 @@
 setlocal
 
 REM ============================================================
-REM  VALIDATE FRONTEND + BACKEND DEPLOYMENT
+REM  VALIDATE FRONTEND + BACKEND DEPLOYMENT  (Jenkins-safe)
 REM ============================================================
 
 echo ============================================================
@@ -21,7 +21,8 @@ if not exist "%FRONTEND_DIR%\index.html" (
     exit /b 1
 )
 
-curl http://localhost --silent --fail >NUL
+REM Use -s (silent) and -o NUL (discard output) for Jenkins-safe curl
+curl -s -o NUL http://localhost/
 if %errorlevel% neq 0 (
     echo [ERROR] Frontend HTTP check failed.
     exit /b 1
@@ -35,13 +36,14 @@ REM Validate Backend
 REM ------------------------------
 echo [STEP] Checking backend...
 
-curl http://localhost:8081/health --silent --fail >NUL
+curl -s -o NUL http://localhost:8081/health
 if %errorlevel% neq 0 (
     echo [ERROR] Backend /health failed.
     exit /b 1
 )
 
 echo [OK] Backend is responding.
+
 
 echo ============================================================
 echo   ALL DEPLOYMENT VALIDATIONS PASSED
