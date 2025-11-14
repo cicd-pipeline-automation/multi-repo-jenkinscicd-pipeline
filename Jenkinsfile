@@ -90,10 +90,5 @@ pipeline {
         failure {
             echo "❌ Build/Deployment Failed — Check logs!"
         }
-
-        always {
-            echo "🧹 Cleaning up workspace..."
-            cleanWs()
-        }
     }
 }

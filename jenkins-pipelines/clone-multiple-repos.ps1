@@ -39,8 +39,8 @@ if (!(Get-Command git.exe -ErrorAction SilentlyContinue)) {
 $BASE_FOLDER = "C:\jenkins-workspace"
 
 $REPOS = @(
-    @{ Name = "frontend"; Url = "https://github.com/example/frontend-ui.git"; Branch = "main" },
-    @{ Name = "backend";  Url = "https://github.com/example/backend-api.git"; Branch = "main" }
+    @{ Name = "frontend"; Url = "https://github.com/cicd-pipeline-automation/frontend-ui.git"; Branch = "main" },
+    @{ Name = "backend";  Url = "https://github.com/cicd-pipeline-automation/backend-api.git"; Branch = "main" }
 )
 
 
