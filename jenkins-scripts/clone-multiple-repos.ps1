@@ -54,4 +54,4 @@ foreach ($repo in $REPOS) {
 
 }
 
-Log-Success "=== All Repositories Successfully Cloned/Updated ==="
+Log-Success "=== All Repositories Successfully Cloned/Updated ===:"
