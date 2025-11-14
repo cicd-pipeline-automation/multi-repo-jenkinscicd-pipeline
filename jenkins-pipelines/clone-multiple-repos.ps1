@@ -34,22 +34,28 @@ foreach ($repo in $REPOS) {
     try {
 
         if (Test-Path $TARGET_PATH) {
+
             Log-Warn "Repository exists — pulling latest changes..."
             Set-Location $TARGET_PATH
             git fetch --all
-            git reset --hard "origin/$($repo.Branch)"
+            git reset --hard ("origin/" + $repo.Branch)
             Log-Success "Updated repository: $($repo.Name)"
+
         }
         else {
+
             Log-Info "Cloning repository..."
             git clone -b $repo.Branch $repo.Url $TARGET_PATH
             Log-Success "Cloned repository: $($repo.Name)"
+
         }
 
     }
     catch {
+
         Log-Error "Failed processing repository: $($repo.Name)"
         exit 1
+
     }
 
 }
