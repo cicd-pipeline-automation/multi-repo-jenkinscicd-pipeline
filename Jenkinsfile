@@ -4,17 +4,18 @@ pipeline {
      *  AGENT CONFIGURATION
      ************************************************************/
     agent any
+
     /************************************************************
      *  GLOBAL OPTIONS
      ************************************************************/
     options {
-        ansiColor('xterm')                  // Colored console output
-        timestamps()                         // Timestamp each line in console
-        buildDiscarder(logRotator(          // Keep Jenkins clean
+        ansiColor('xterm')                   // Enable colored output
+        timestamps()                          // Add timestamps to logs
+        buildDiscarder(logRotator(
             daysToKeepStr: '30',
             numToKeepStr: '20'
         ))
-        timeout(time: 30, unit: 'MINUTES')   // Fail fast on stuck pipelines
+        timeout(time: 30, unit: 'MINUTES')    // Protect against stuck builds
     }
 
     /************************************************************
@@ -30,53 +31,53 @@ pipeline {
      ************************************************************/
     stages {
 
-        stage('📥 Clone Multi Repositories') {
+        stage('Clone Multi Repositories 📥') {
             steps {
                 script {
-                    echo "Cloning all required repositories into: ${WORKSPACE_DIR}"
+                    echo "Starting clone operations into: ${WORKSPACE_DIR}"
                 }
                 powershell """
-                    ${PIPELINE_SCRIPTS}\\clone-multiple-repos.ps1
+                    & "${PIPELINE_SCRIPTS}\\clone-multiple-repos.ps1"
                 """
             }
         }
 
-        stage('🛠 Build Frontend') {
+        stage('Build Frontend 🛠') {
             steps {
                 script {
-                    echo "Starting frontend build..."
+                    echo "Running frontend build..."
                 }
                 powershell """
-                    ${PIPELINE_SCRIPTS}\\build-frontend.ps1
+                    & "${PIPELINE_SCRIPTS}\\build-frontend.ps1"
                 """
             }
         }
 
-        stage('⚙️ Build Backend') {
+        stage('Build Backend ⚙️') {
             steps {
                 script {
-                    echo "Compiling backend application..."
+                    echo "Running backend Maven build..."
                 }
                 powershell """
-                    ${PIPELINE_SCRIPTS}\\build-backend.ps1
+                    & "${PIPELINE_SCRIPTS}\\build-backend.ps1"
                 """
             }
         }
 
-        stage('🚀 Deploy to Server') {
+        stage('Deploy to Server 🚀') {
             steps {
                 script {
-                    echo "Starting Docker build & deployment..."
+                    echo "Executing Docker deployment..."
                 }
                 powershell """
-                    ${PIPELINE_SCRIPTS}\\deploy.ps1
+                    & "${PIPELINE_SCRIPTS}\\deploy.ps1"
                 """
             }
         }
     }
 
     /************************************************************
-     *  POST-ACTIONS (Run even if failure occurs)
+     *  POST-ACTIONS
      ************************************************************/
     post {
 
