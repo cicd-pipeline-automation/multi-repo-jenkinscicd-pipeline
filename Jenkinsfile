@@ -21,7 +21,7 @@ pipeline {
      *  ENVIRONMENT VARIABLES
      ************************************************************/
     environment {
-        PIPELINE_SCRIPTS = "C:\\jenkins-pipelines"
+        PIPELINE_SCRIPTS = "C:\\jenkins-scripts"
         WORKSPACE_DIR    = "C:\\jenkins-workspace"
     }
 
